@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-    margin: '50',
+    margin: '40',
     padding: '40'
   },
   inputs: {

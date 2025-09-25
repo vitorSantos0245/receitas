@@ -9,7 +9,6 @@ export default function VerificarLista({ navegacao }) {
 
     return (
 
-
         <View style={styles.container}>
             <Text style={styles.textos}>LISTA DE PRODUTOS</Text>
             <Text >ADICIONAR PRODUTO</Text>
@@ -19,9 +18,6 @@ export default function VerificarLista({ navegacao }) {
                 <Text>ADICIONAR</Text>
             </TouchableOpacity>
         </View>
-
-
-
     )
 }
 const styles = StyleSheet.create({

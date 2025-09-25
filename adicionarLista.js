@@ -19,7 +19,6 @@ export default function adicionar ({navegacao}) {
                         <Text>ADICIONAR</Text>
                     </TouchableOpacity>
                 </View>
-
     </View>
 
   )
