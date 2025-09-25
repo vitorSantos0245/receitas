@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Modal } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Modal, requireNativeComponent } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function App() {
@@ -8,8 +8,7 @@ export default function App() {
   const [title, setTitle] = useState('');
   const [ingredients, setIngredients] = useState('');
   const [modoPreparo, setModoPreparo] = useState('');
-  const [confirmacao, setConfirmacao] = useState(false);
-
+  
   useEffect(() => {
     const loadRecipes = async () => {
 
@@ -46,7 +45,8 @@ export default function App() {
 
     const handleDeleteRecipe = (id) => {
 
-      setRecipes(currentRecipes => currentRecipes.filter(recipe => recipe.id !== id));
+     setRecipes(currentRecipes => currentRecipes.filter(recipe => recipe.id !== id));
+  return setView('lista')
     };
   }
   return (
@@ -79,13 +79,16 @@ export default function App() {
 
                   <TouchableOpacity
                     style={styles.botaoEditar}
-                    onPress={() => { }}>
+                    onPress={() => {
+                      setEditarReceita(item);
+                      setView('formulario');
+                    }}>
                     <Text style={styles.buttonText}>Editar</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
                     style={styles.deleteButton}
-                    onPress={() => handleDeleteRecipe(item.id)}>
+                    onPress={() => handleAddRecipe(item.id)}>
                     <Text style={styles.buttonText}>Excluir</Text>
                   </TouchableOpacity>
 
@@ -134,6 +137,7 @@ export default function App() {
             </View>
           </View>
         )}
+
       </ScrollView>
 
     </View>
