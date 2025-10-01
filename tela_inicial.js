@@ -2,14 +2,15 @@ import { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Modal, requireNativeComponent } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function TelaInicial(){
-    
+export default function TelaInicial() {
+
   const [view, setView] = useState('lista');
   const [recipes, setRecipes] = useState([]);
   const [title, setTitle] = useState('');
   const [ingredients, setIngredients] = useState('');
   const [modoPreparo, setModoPreparo] = useState('');
-  
+  const [editarReceita, setEditarReceita] = useState(null);
+
   useEffect(() => {
     const loadRecipes = async () => {
 
@@ -25,31 +26,75 @@ export default function TelaInicial(){
     loadRecipes();
   }, []);
 
-  const handleAddRecipe = () => {
-
+  const handleSaveRecipe = async () => {
     if (!title) {
+      Alert.alert("Atenção", "O título da receita não pode estar vazio.");
       return;
     }
 
-    const newRecipe = {
-      id: Date.now().toString(),
-      title: title,
-      ingredients: ingredients,
-      preparo: modoPreparo
-    };
-    setRecipes(currentRecipes => [...currentRecipes, newRecipe]);
+    let updatedRecipes = [];
 
+    if (editarReceita) {
+      // **MODO EDIÇÃO:** Substitui a receita existente pelo mesmo ID
+      updatedRecipes = recipes.map(recipe =>
+        recipe.id === editarReceita.id
+          ? { id: editarReceita.id, title, ingredients, preparo: modoPreparo }
+          : recipe
+      );
+    } else {
+      // **MODO ADIÇÃO:** Cria uma nova receita
+      const newRecipe = {
+        id: Date.now().toString(),
+        title: title,
+        ingredients: ingredients,
+        preparo: modoPreparo
+      };
+      updatedRecipes = [...recipes, newRecipe];
+    }
+
+    // 1. Atualiza o estado
+    setRecipes(updatedRecipes);
+
+    // 2. Salva no AsyncStorage
+    try {
+      await AsyncStorage.setItem('@recipes', JSON.stringify(updatedRecipes));
+      Alert.alert('Sucesso', editarReceita ? 'Receita editada com sucesso!' : 'Receita adicionada com sucesso!');
+    } catch (e) {
+      console.error("Falha ao salvar receita.", e);
+    }
+
+    // 3. Limpa os campos, limpa o estado de edição e volta para a lista
     setModoPreparo('');
     setTitle('');
     setIngredients('');
+    setEditarReceita(null); // **IMPORTANTE: Limpa o estado de edição**
     setView('lista');
+  };
 
-    const handleDeleteRecipe = (id) => {
+  const handleDeleteRecipe = async (id) => { // **Declare a função fora de handleAddRecipe e adicione async**
+    // 1. Filtra a lista para criar uma nova lista sem a receita com o ID passado
+    const updatedRecipes = recipes.filter(recipe => recipe.id !== id);
 
-     setRecipes(currentRecipes => currentRecipes.filter(recipe => recipe.id !== id));
-  return setView('lista')
+    // 2. Atualiza o estado com a nova lista
+    setRecipes(updatedRecipes);
+
+    // 3. Salva a nova lista no AsyncStorage
+    try {
+      await AsyncStorage.setItem('@recipes', JSON.stringify(updatedRecipes));
+      alert('Receita excluída com sucesso!');
+    } catch (e) {
+      console.error("Falha ao excluir e salvar receitas.", e);
+      alert('Erro ao excluir receita.');
+    }
+    // Não é necessário setView('lista') aqui, pois a exclusão já acontece na view 'lista'.
+    const handleEditRecipe = (item) => {
+      setEditarReceita(item); // 1. Define qual receita será editada
+      setTitle(item.title);     // 2. Preenche o input do título
+      setIngredients(item.ingredients); // 3. Preenche o input dos ingredientes
+      setModoPreparo(item.preparo);   // 4. Preenche o input do modo de preparo
+      setView('formulario'); // 5. Muda para a tela do formulário
     };
-  }
+  };
   return (
     <View style={styles.container}>
 
@@ -80,19 +125,15 @@ export default function TelaInicial(){
 
                   <TouchableOpacity
                     style={styles.botaoEditar}
-                    onPress={() => {
-                      setEditarReceita(item);
-                      setView('formulario');
-                    }}>
+                    onPress={() => handleEditRecipe(item)}>
                     <Text style={styles.buttonText}>Editar</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
                     style={styles.deleteButton}
-                    onPress={() => handleAddRecipe(item.id)}>
+                    onPress={() => handleDeleteRecipe(item.id)}>
                     <Text style={styles.buttonText}>Excluir</Text>
                   </TouchableOpacity>
-
                 </View>
               ))
             )}
@@ -132,7 +173,7 @@ export default function TelaInicial(){
                 <Text style={styles.buttonText}>Cancelar</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.formButton, styles.saveButton]} onPress={handleAddRecipe}>
+              <TouchableOpacity style={[styles.formButton, styles.saveButton]} onPress={handleSaveRecipe}>
                 <Text style={styles.buttonText}>Salvar</Text>
               </TouchableOpacity>
             </View>
@@ -160,7 +201,6 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     color: '#e67e22',
   },
-  // Formulário
   formContainer: {
     backgroundColor: '#fff',
     padding: 20,
@@ -200,7 +240,6 @@ const styles = StyleSheet.create({
   saveButton: {
     backgroundColor: '#27ae60',
   },
-  // Lista
   addButton: {
     backgroundColor: '#007bff',
     padding: 15,
