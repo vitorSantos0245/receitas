@@ -35,14 +35,12 @@ export default function TelaInicial() {
     let updatedRecipes = [];
 
     if (editarReceita) {
-      // **MODO EDIÇÃO:** Substitui a receita existente pelo mesmo ID
       updatedRecipes = recipes.map(recipe =>
         recipe.id === editarReceita.id
           ? { id: editarReceita.id, title, ingredients, preparo: modoPreparo }
           : recipe
       );
     } else {
-      // **MODO ADIÇÃO:** Cria uma nova receita
       const newRecipe = {
         id: Date.now().toString(),
         title: title,
@@ -51,34 +49,27 @@ export default function TelaInicial() {
       };
       updatedRecipes = [...recipes, newRecipe];
     }
-
-    // 1. Atualiza o estado
     setRecipes(updatedRecipes);
 
-    // 2. Salva no AsyncStorage
     try {
       await AsyncStorage.setItem('@recipes', JSON.stringify(updatedRecipes));
       Alert.alert('Sucesso', editarReceita ? 'Receita editada com sucesso!' : 'Receita adicionada com sucesso!');
     } catch (e) {
       console.error("Falha ao salvar receita.", e);
     }
-
-    // 3. Limpa os campos, limpa o estado de edição e volta para a lista
     setModoPreparo('');
     setTitle('');
     setIngredients('');
-    setEditarReceita(null); // **IMPORTANTE: Limpa o estado de edição**
+    setEditarReceita(null);
     setView('lista');
   };
 
-  const handleDeleteRecipe = async (id) => { // **Declare a função fora de handleAddRecipe e adicione async**
-    // 1. Filtra a lista para criar uma nova lista sem a receita com o ID passado
+  const handleDeleteRecipe = async (id) => {
+
     const updatedRecipes = recipes.filter(recipe => recipe.id !== id);
 
-    // 2. Atualiza o estado com a nova lista
     setRecipes(updatedRecipes);
 
-    // 3. Salva a nova lista no AsyncStorage
     try {
       await AsyncStorage.setItem('@recipes', JSON.stringify(updatedRecipes));
       alert('Receita excluída com sucesso!');
@@ -86,14 +77,13 @@ export default function TelaInicial() {
       console.error("Falha ao excluir e salvar receitas.", e);
       alert('Erro ao excluir receita.');
     }
-    // Não é necessário setView('lista') aqui, pois a exclusão já acontece na view 'lista'.
-    const handleEditRecipe = (item) => {
-      setEditarReceita(item); // 1. Define qual receita será editada
-      setTitle(item.title);     // 2. Preenche o input do título
-      setIngredients(item.ingredients); // 3. Preenche o input dos ingredientes
-      setModoPreparo(item.preparo);   // 4. Preenche o input do modo de preparo
-      setView('formulario'); // 5. Muda para a tela do formulário
-    };
+  };
+  const handleEditRecipe = (item) => {
+    setEditarReceita(item);
+    setTitle(item.title);
+    setIngredients(item.ingredients);
+    setModoPreparo(item.preparo);
+    setView('formulario');
   };
   return (
     <View style={styles.container}>
@@ -124,7 +114,7 @@ export default function TelaInicial() {
                   </View>
 
                   <TouchableOpacity
-                    style={styles.botaoEditar}
+                    style={styles.editButton}
                     onPress={() => handleEditRecipe(item)}>
                     <Text style={styles.buttonText}>Editar</Text>
                   </TouchableOpacity>
@@ -152,13 +142,13 @@ export default function TelaInicial() {
             />
             <TextInput
               style={[styles.input, styles.textArea]}
-              placeholder="Ingredientes"  // Mostra o texto Ingredientes na tela
-              value={ingredients} // é o valor do input
+              placeholder="Ingredientes"
+              value={ingredients}
 
 
-              onChangeText={setIngredients}  // Pega o que o usuário digitou no input e coloca dentro da variável ingrediente mudando seu estado.
+              onChangeText={setIngredients}
 
-              multiline={true}  // Multiline é para que seja possível pular linhas dentro do input
+              multiline={true}
             />
             <TextInput
               style={styles.input}
@@ -189,110 +179,150 @@ export default function TelaInicial() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F9F7F3',
   },
   scrollContainer: {
-    padding: 16,
+    padding: 24,
   },
   header: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginVertical: 20,
-    color: '#e67e22',
-  },
-  formContainer: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
+    fontSize: 34,
+    fontWeight: '800',
+    textAlign: 'left',
+    marginBottom: 20,
+    color: '#333333',
+    borderBottomWidth: 3,
+    borderBottomColor: '#B85F49',
+    paddingBottom: 8,
+    marginTop: 10,
   },
   formHeader: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 15,
+    fontSize: 26,
+    fontWeight: '700',
+    marginBottom: 25,
     textAlign: 'center',
+    color: '#B85F49',
+  },
+  formContainer: {
+    backgroundColor: '#FFFFFF',
+    padding: 30,
+    borderRadius: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 8,
+    marginBottom: 30,
   },
   input: {
-    borderColor: '#bdc3c7',
+    backgroundColor: '#F9F7F3',
+    borderColor: '#E0DEDC',
     borderWidth: 1,
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 15,
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 20,
     fontSize: 16,
+    color: '#333333',
   },
   textArea: {
-    height: 100,
+    height: 150,
     textAlignVertical: 'top',
   },
   formActions: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
+    marginTop: 15,
   },
   formButton: {
     flex: 1,
-    padding: 12,
-    borderRadius: 5,
+    paddingVertical: 14,
+    borderRadius: 10,
     marginHorizontal: 5,
   },
   cancelButton: {
     backgroundColor: '#95a5a6',
   },
   saveButton: {
-    backgroundColor: '#27ae60',
+    backgroundColor: '#588B8B',
   },
   addButton: {
-    backgroundColor: '#007bff',
-    padding: 15,
-    borderRadius: 5,
+    backgroundColor: '#B85F49',
+    padding: 18,
+    borderRadius: 10,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 30,
+    shadowColor: '#B85F49',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 10,
   },
   recipeItem: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     padding: 20,
-    marginVertical: 8,
-    borderRadius: 10,
+    marginVertical: 10,
+    borderRadius: 15,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    borderLeftWidth: 5,
+    borderLeftColor: '#B85F49',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 3,
   },
   recipeTextContainer: {
     flex: 1,
     marginRight: 15,
   },
   recipeTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#333333',
+    marginBottom: 5,
   },
   recipeIngredients: {
-    fontSize: 16,
-    color: '#7f8c8d',
+    fontSize: 15,
+    color: '#666666',
     marginTop: 5,
+    fontStyle: 'italic',
+  },
+  actionButtonsContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
   },
   deleteButton: {
-    backgroundColor: '#e74c3c',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    backgroundColor: '#E74C3C',
+    padding: 12,
     borderRadius: 5,
+    marginBottom: 10,
+    width: 50,
+    height: 45,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  botaoEditar: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+  editButton: {
+    backgroundColor: '#588B8B',
+    padding: 10,
     borderRadius: 5,
-    backgroundColor: 'green',
-    margin: '30px'
+    marginBottom: 10,
+    width: 50,
+    height: 45,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonText: {
     color: 'white',
-    fontWeight: 'bold',
+    fontWeight: '600',
     textAlign: 'center',
+    fontSize: 16,
   },
   emptyText: {
     textAlign: 'center',
-    marginTop: 30,
+    marginTop: 60,
     fontSize: 18,
-    color: '#95a5a6',
+    color: '#B85F49',
+    fontStyle: 'italic',
   },
-
-}
-);
+});
